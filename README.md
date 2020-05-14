@@ -1,6 +1,6 @@
 # animepahe_downloader
 
-Simple Python script to search stream and download from the animepahe website via a terminal.
+Simple Python script to search, stream and download from the animepahe website via a terminal.
 
 Allows users to search for a series and stream or download a chosen episode of the series.
 
