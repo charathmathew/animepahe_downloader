@@ -1,16 +1,21 @@
 from bs4 import BeautifulSoup
 from clint.textui import progress
-import subprocess
 import os
+os.add_dll_directory(r'C:\Program Files\VideoLAN\VLC')
+import vlc
+import subprocess
 import requests
 import json
-import m3u8
 import re
 
 def run_script_in_node(js: str):
     proc = subprocess.check_output(['node', '-e', js])
     return proc.decode('utf-8')
 
+
+# Path the vlc media  player executable
+# VLC media player is required to stream videos 
+PATH_TO_VLC = "C:/Program Files/VideoLan/VLC/vlc.exe"
 
 # prompt user for a search term
 term = input("Search animepahe: ")
@@ -86,10 +91,7 @@ for result in episodes["data"]:
 
 
 # prompt user to select an episode
-epNumber = int(input("Episode (input serial number of episode): "))
-
-# clear the terminal
-os.system('cls||clear')
+epNumber = int(input("Enter episode number: "))
 
 # object of the selected episode from the api
 selectedEpisode = episodes["data"][epNumber-1]
@@ -180,27 +182,35 @@ print("\n\n", token)
 print("\n\n", expires)
 print("\n\n", episodeTitle)
 '''
-print("\n\nDownload Link: ", episodeDownloadUrl)
 
-# check if a downloads directory exists if not, create it and cd into it
-downloads_dir = ("downloads")
-downloads_exists = os.path.isdir(downloads_dir)
+# does user want to download or stream the selected episode?
+action = input(("\n\nDownload or Stream?\n"))
 
-if downloads_exists:
-    os.chdir(downloads_dir)
-else:
-    os.makedirs(downloads_dir)
-    print("downloads directory created... ", downloads_dir)
-    os.chdir(downloads_dir)
+if action == 'download':        
+    # check if a downloads directory exists and if not, create one and cd into it
+    downloads_dir = ("downloads")
+    downloads_exists = os.path.isdir(downloads_dir)
 
+    if downloads_exists:
+        os.chdir(downloads_dir)
+    else:
+        os.makedirs(downloads_dir)
+        print("downloads directory created... ", downloads_dir)
+        os.chdir(downloads_dir)
 
-req  = requests.get(episodeDownloadUrl, stream = True)
+    print("\n\nDownload from ", episodeDownloadUrl)
 
-with open( episodeTitle, 'wb') as file:
+    req  = requests.get(episodeDownloadUrl, stream = True)
 
-    total_length = int(req.headers.get('content-length'))
+    with open( episodeTitle, 'wb') as file:
 
-    for chunk in progress.bar(req.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
-        if chunk:
-            file.write(chunk)
+        total_length = int(req.headers.get('content-length'))
 
+        for chunk in progress.bar(req.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
+            if chunk:
+                file.write(chunk)
+
+if action == 'stream':
+    # create a subprocess to open the episode url with vlc media player
+    # PATH_TO_VLC is the path the vlc executable
+    subprocess.Popen([PATH_TO_VLC, episodeDownloadUrl])
